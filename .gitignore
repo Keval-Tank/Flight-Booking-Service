@@ -3,3 +3,4 @@ node_modules
 combined.log
 error.log
 src/config/config.json
+/src/generated/prisma

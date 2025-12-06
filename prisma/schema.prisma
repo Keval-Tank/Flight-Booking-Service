@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Airplane {
+  id          Int      @id @default(autoincrement())
+  modelNumber String
+  capacity    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  Flight      Flight[]
+  Seat        Seat[]
+}
+
+model Airport {
+  name                                      String   @unique
+  code                                      String   @unique
+  address                                   String?  @unique
+  cityId                                    Int
+  id                                        Int      @id @default(autoincrement())
+  City                                      City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  Flight_Flight_arrivalAirportIdToAirport   Flight[] @relation("Flight_arrivalAirportIdToAirport")
+  Flight_Flight_departureAirportIdToAirport Flight[] @relation("Flight_departureAirportIdToAirport")
+}
+
+model City {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime
+  Airport   Airport[]
+}
+
+model Flight {
+  id                                         Int      @id @default(autoincrement())
+  flightNumber                               String
+  airplaneId                                 Int
+  departureAirportId                         String
+  arrivalAirportId                           String
+  arrivalTime                                DateTime
+  departureTime                              DateTime
+  price                                      Int
+  boardingGate                               String?
+  totalSeats                                 Int
+  Airplane                                   Airplane @relation(fields: [airplaneId], references: [id], onDelete: Cascade)
+  Airport_Flight_arrivalAirportIdToAirport   Airport  @relation("Flight_arrivalAirportIdToAirport", fields: [arrivalAirportId], references: [code], onDelete: Cascade)
+  Airport_Flight_departureAirportIdToAirport Airport  @relation("Flight_departureAirportIdToAirport", fields: [departureAirportId], references: [code], onDelete: Cascade)
+}
+
+model Seat {
+  id         Int      @id @default(autoincrement())
+  airplaneId Int
+  row        Int
+  col        String
+  type       SeatType @default(ECONOMY)
+  Airplane   Airplane @relation(fields: [airplaneId], references: [id], onDelete: Cascade)
+}
+
+model Booking {
+  id        Int           @id @default(autoincrement())
+  flightId  Int
+  userId    Int
+  status    BookingStatus @default(INITIATED)
+  noOfSeats Int           @default(1)
+  totalCost Int
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+enum SeatType {
+  BUSINESS
+  ECONOMY
+  PREMIUM_ECONOMY
+  FIRST_CLASS
+}
+
+enum BookingStatus {
+  BOOKED
+  CANCELLED
+  INITIATED
+  PENDING
+}
