@@ -1,7 +1,9 @@
-import {response, type Request, type Response} from 'express'
+import { type Request, type Response} from 'express'
 import responses from '../utils/common'
 import { StatusCodes } from 'http-status-codes'
 import services from '../services'
+
+const inMemDB : any = {}
 
 const createBooking = async(req : Request, res : Response) => {
     try{
@@ -22,6 +24,19 @@ const createBooking = async(req : Request, res : Response) => {
 
 const makePayment = async(req : Request, res : Response) => {
     try{
+        if(!req.headers['x-idempotency-key']){
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                'msg' : 'idempotency key not found'
+            })
+        }
+        const idempotencyKey : string = req.headers['x-idempotency-key'];
+        if(inMemDB[idempotencyKey]){
+            return res.status(StatusCodes.BAD_REQUEST).json({
+                'msg' : 'Cannot retry a successful payment'
+            })
+        }
+        console.log(inMemDB)
+        inMemDB[idempotencyKey] = idempotencyKey
         const data = {
             id : parseInt(req.body.id),
             totalCost : parseInt(req.body.totalCost),

@@ -4,6 +4,7 @@ import { AppError } from "../utils/errors/AppError";
 import { StatusCodes } from "http-status-codes";
 import config from "../config";
 
+
 const flightServiceUrl = config.ServerConfig.FLIGHT_SERVICE_URL
 async function createBooking(booking_data : any){
     try{
@@ -44,7 +45,7 @@ async function makePayment(booking_data : any){
             }
             const bookingTime = new Date(booking_details?.createdAt!);
             const currentTime = new Date();
-            if((currentTime - bookingTime) > 60000){
+            if((currentTime - bookingTime) > 300000){
                 await cancelBooking({id :booking_data.id})
                 throw new AppError("booking has been expired", StatusCodes.BAD_REQUEST)
             }
